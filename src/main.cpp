@@ -13,7 +13,7 @@ void loop_handler(void *arg)
     usleep(1000 / FPS * 1000);
     runtime->doInput();
     runtime->run();
-    runtime->paint();
+    // runtime->paint();
 }
 
 int main(int argc, char *args[])

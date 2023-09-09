@@ -7,7 +7,6 @@
 
 class CFrameSet;
 class CFrame;
-class CMapArch;
 class CFont;
 class CGrid;
 class CShape;
@@ -19,6 +18,7 @@ public:
     virtual ~CGame();
 
     void init();
+    void run();
 
 protected:
     void mainLoop();
@@ -34,6 +34,7 @@ protected:
     uint16_t managePeers(CShape &shape);
     void initGame();
     void manageGame();
+    virtual void paint();
 
     enum : uint32_t
     {

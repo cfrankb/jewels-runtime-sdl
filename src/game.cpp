@@ -64,8 +64,7 @@ void CGame::preloadAssets()
         printf("failed to open %s\n", fontName);
     }
 
-    init();
-    //  test();
+    // test();
 }
 
 void CGame::drawFont(CFrame &frame, int x, int y, const char *text, const uint32_t color)
@@ -169,15 +168,18 @@ void CGame::drawTile(CFrame &bitmap, const int x, const int y, CFrame &tile, boo
     }
 }
 
-void CGame::mainLoop()
+void CGame::run()
 {
-
     if (m_countdown > 0)
     {
         --m_countdown;
     }
 
     ++m_ticks;
+    if ((m_ticks & 3) == 0)
+    {
+        paint();
+    }
     manageGame();
 }
 
@@ -236,15 +238,24 @@ void CGame::drawStatus(CFrame &bitmap)
 {
     char t[16];
     const int fontSize = 8;
+
+    int offsetY = 0;
+
+    drawRect(
+        bitmap,
+        Rect{.x = 0, .y = 0, .width = WIDTH, .height = 2 * fontSize},
+        MEDIUM_BLUE,
+        true);
+
     // Score
-    drawString(bitmap, 0, 0, "SCORE", CYAN, MEDIUM_BLUE);
+    drawString(bitmap, 0, offsetY, "SCORE", CYAN, MEDIUM_BLUE);
     sprintf(t, "%.6ld", score);
-    drawString(bitmap, 0, fontSize, t, CYAN, MEDIUM_BLUE);
+    drawString(bitmap, 0, offsetY + fontSize, t, CYAN, MEDIUM_BLUE);
 
     // Level
-    drawString(bitmap, 7 * fontSize, 0, "LEVEL", WHITE, MEDIUM_BLUE);
+    drawString(bitmap, 7 * fontSize, offsetY, "LEVEL", WHITE, MEDIUM_BLUE);
     sprintf(t, "  %.2d ", level);
-    drawString(bitmap, 7 * fontSize, fontSize, t, WHITE, MEDIUM_BLUE);
+    drawString(bitmap, 7 * fontSize, offsetY + fontSize, t, WHITE, MEDIUM_BLUE);
 
     // Blocks Left
     drawString(bitmap, 14 * fontSize, 0, "LEFT", PURPLE, MEDIUM_BLUE);
@@ -498,7 +509,6 @@ void CGame::manageGame()
 
     //   printf("cycles: %d gameSpeed:%d\n", cycles, gameSpeed);
     // vTaskDelay(10 / portTICK_PERIOD_MS);
-
     if ((cycles & 15) == 0)
     {
         if (m_joyState[AIM_UP])
@@ -536,20 +546,10 @@ void CGame::manageGame()
     }
     if ((cycles % gameSpeed) == 0)
     {
-        // m_grid->at(1, 10) = 10;
-        // printf("at %x\n", m_grid->at(1, 10));
-
-        // printf("here....x=%d, y=%d\n", m_shape.x(), m_shape.y());
         drawShape(false);
-        if (m_shape.y() > 0)
-        {
-            //   printf("grid at %d,%d =  %x\n", m_shape.x(), m_shape.y(), m_grid->at(m_shape.x(), m_shape.y()));
-        }
-        // printf("...%x %x %x\n", m_shape.tile(0), m_shape.tile(1), m_shape.tile(2));
         //  move shape down
         if (canMoveShape(CShape::DOWN))
         {
-            //  printf("........xxxxxxxxxxx.......\n");
             eraseShape();
             shape.move(CShape::DOWN);
             drawShape(false);
@@ -583,7 +583,7 @@ void CGame::manageGame()
                 if (levelChanged)
                 {
                     level++;
-                    // printf(">> level %d\n", level);
+                    printf(">> level %d\n", level);
                     if (level % 3 == 0)
                     {
                         blockRange = std::min(blockRange + 1, m_blocks->getSize() - 1);
@@ -599,4 +599,9 @@ void CGame::manageGame()
         }
         drawShape();
     }
+}
+
+void CGame::paint()
+{
+    printf("implement in child class\n");
 }

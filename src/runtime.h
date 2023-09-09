@@ -7,8 +7,7 @@ public:
     CRuntime();
     virtual ~CRuntime();
 
-    void paint();
-    void run();
+    virtual void paint();
     bool SDLInit();
     void doInput();
 

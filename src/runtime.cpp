@@ -75,11 +75,6 @@ void CRuntime::cleanup()
 {
 }
 
-void CRuntime::run()
-{
-    mainLoop();
-}
-
 void CRuntime::doInput()
 {
     SDL_Event event;
