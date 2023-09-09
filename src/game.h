@@ -33,6 +33,7 @@ protected:
     void blocksFromCols(std::set<int16_t> &chCols, std::vector<pos_t> &blocks);
     uint16_t managePeers(CShape &shape);
     void initGame();
+    void manageGame();
 
     enum : uint32_t
     {
@@ -114,7 +115,7 @@ protected:
     uint16_t totalBlocks;
     int blockRange;
 
-    CShape *m_shape = nullptr;
+    CShape m_shape;
 };
 
 #endif // CGAMEMIXIN_H

@@ -11,7 +11,6 @@ CGame::CGame()
 {
     m_grid = new CGrid(COLS, ROWS);
     m_font = new CFont(CFont::shift8bytes);
-    m_shape = new CShape(0, 0);
     preloadAssets();
     memset(m_joyState, 0, sizeof(m_joyState));
 }
@@ -26,11 +25,6 @@ CGame::~CGame()
     if (m_font)
     {
         delete m_font;
-    }
-
-    if (m_shape)
-    {
-        delete m_shape;
     }
 }
 
@@ -177,12 +171,14 @@ void CGame::drawTile(CFrame &bitmap, const int x, const int y, CFrame &tile, boo
 
 void CGame::mainLoop()
 {
+
     if (m_countdown > 0)
     {
         --m_countdown;
     }
 
     ++m_ticks;
+    manageGame();
 }
 
 void CGame::startCountdown(int f)
@@ -192,6 +188,7 @@ void CGame::startCountdown(int f)
 
 void CGame::drawScreen(CFrame &bitmap)
 {
+    // printf("drawScreen()\n");
     CFrameSet &blocks = *m_blocks;
     for (int y = 0; y < ROWS; ++y)
     {
@@ -258,6 +255,7 @@ void CGame::drawStatus(CFrame &bitmap)
 
 void CGame::init()
 {
+    printf("CGame::init()\n");
     gameSpeed = 50;
     score = 0;
     level = 1;
@@ -270,7 +268,8 @@ void CGame::init()
 
 void CGame::newShape()
 {
-    m_shape->newShape(random() % COLS, 0, 10);
+    printf("newShape %d\n", blockRange);
+    m_shape.newShape(random() % COLS, -2, blockRange);
     drawShape();
 }
 
@@ -281,14 +280,14 @@ void CGame::restartGame()
 
 void CGame::drawShape(bool erase)
 {
-    CShape &shape = *m_shape;
+    CShape &shape = m_shape;
     uint8_t x = shape.x();
     for (int8_t i = 0; i < CShape::height(); ++i)
     {
         int8_t y = shape.y() + i;
-        if (y < 1)
+        if (y < 0)
         {
-            // continue;
+            continue;
         }
         uint8_t tile = erase ? TILE_BLANK : shape.tile(i);
         // drawTile(x, y, tile);
@@ -303,7 +302,7 @@ void CGame::eraseShape()
 
 bool CGame::canMoveShape(int aim)
 {
-    CShape &shape = *m_shape;
+    CShape &shape = m_shape;
     CGrid &grid = *m_grid;
     int x = shape.x();
     int y = shape.y();
@@ -356,7 +355,7 @@ bool CGame::canMoveShape(int aim)
 
 void CGame::collapseCol(int16_t x)
 {
-    CShape &shape = *m_shape;
+    CShape &shape = m_shape;
     CGrid &grid = *m_grid;
     int16_t dy = INVALID;
     for (int16_t y = rows - 1; y >= 0; --y)
@@ -380,7 +379,7 @@ void CGame::collapseCol(int16_t x)
 
 void CGame::removePeers(peers_t &peers)
 {
-    CShape &shape = *m_shape;
+    CShape &shape = m_shape;
     CGrid &grid = *m_grid;
     for (std::set<uint32_t>::iterator it = peers.begin(); it != peers.end(); ++it)
     {
@@ -393,7 +392,7 @@ void CGame::removePeers(peers_t &peers)
 
 void CGame::collapseCols(std::set<int16_t> &chCols)
 {
-    CShape &shape = *m_shape;
+    CShape &shape = m_shape;
     CGrid &grid = *m_grid;
     for (std::set<int16_t>::iterator it = chCols.begin(); it != chCols.end(); ++it)
     {
@@ -404,7 +403,6 @@ void CGame::collapseCols(std::set<int16_t> &chCols)
 
 void CGame::blocksFromShape(CShape &shape, std::vector<pos_t> &blocks)
 {
-    // CShape &shape = *m_shape;
     CGrid &grid = *m_grid;
     blocks.clear();
     uint8_t x = shape.x();
@@ -421,7 +419,7 @@ void CGame::blocksFromShape(CShape &shape, std::vector<pos_t> &blocks)
 
 void CGame::blocksFromCols(std::set<int16_t> &chCols, std::vector<pos_t> &blocks)
 {
-    CShape &shape = *m_shape;
+    CShape &shape = m_shape;
     CGrid &grid = *m_grid;
     blocks.clear();
     for (std::set<int16_t>::iterator it = chCols.begin(); it != chCols.end(); ++it)
@@ -440,7 +438,6 @@ void CGame::blocksFromCols(std::set<int16_t> &chCols, std::vector<pos_t> &blocks
 
 uint16_t CGame::managePeers(CShape &shape)
 {
-    // CShape &shape = *m_shape;
     CGrid &grid = *m_grid;
     uint16_t removedBlocks = 0;
     std::vector<pos_t> blocks;
@@ -496,4 +493,116 @@ void CGame::initGame()
     newShape();
     // ili9488_fill(0, 0, 320, 32, MEDIUM_BLUE);
     printf("(*) grid cleared\n");
+}
+
+void CGame::manageGame()
+{
+    CShape &shape = m_shape;
+    int cycles = m_ticks;
+
+    //   printf("cycles: %d gameSpeed:%d\n", cycles, gameSpeed);
+    // vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    if ((cycles & 15) == 0)
+    {
+        /*
+        uint8_t buttons = readButtons();
+        if (buttons & MASK_A)
+        {
+            shape.shift();
+            drawShape(shape);
+        }
+        else if (buttons & MASK_B)
+        {
+            if (canMoveShape(shape, CShape::LEFT))
+            {
+                eraseShape(shape);
+                shape.move(CShape::LEFT);
+                drawShape(shape);
+            }
+        }
+        else if (buttons & MASK_C)
+        {
+            if (canMoveShape(shape, CShape::RIGHT))
+            {
+                eraseShape(shape);
+                shape.move(CShape::RIGHT);
+                drawShape(shape);
+            }
+        }
+        else if (buttons & MASK_D)
+        {
+            eraseShape(shape);
+            while (canMoveShape(shape, CShape::DOWN))
+            {
+                shape.move(CShape::DOWN);
+            }
+            drawShape(shape);
+        }*/
+    }
+    if ((cycles % gameSpeed) == 0)
+    {
+        printf("here....x=%d, y=%d\n", m_shape.x(), m_shape.y());
+        drawShape(false);
+        if (m_shape.y() > 0)
+        {
+            printf("grid at %d,%x =  %x\n", m_grid->at(m_shape.x(), m_shape.y()));
+        }
+        printf("...%x %x %x\n", m_shape.tile(0), m_shape.tile(1), m_shape.tile(2));
+        // move shape down
+        if (canMoveShape(CShape::DOWN))
+        {
+            printf("........xxxxxxxxxxx.......\n");
+            eraseShape();
+            shape.move(CShape::DOWN);
+            drawShape(false);
+        }
+        else
+        {
+            if (shape.y() <= 0)
+            {
+                initGame();
+                //     drawStatus();
+                cycles = 0;
+            }
+            else
+            {
+                uint16_t removedBlocks = managePeers(shape);
+                score += removedBlocks;
+                /*if (removedBlocks)
+                {
+                    printf("blockCount %d + removedBlocks:%u = newTotal %d; score: %lu\n",
+                           blockCount, removedBlocks, blockCount + removedBlocks, score);
+                }*/
+                blockCount += removedBlocks;
+                totalBlocks += removedBlocks;
+                bool levelChanged = false;
+                while (blockCount >= blocksPerLevel)
+                {
+                    blockCount -= blocksPerLevel;
+                    score += levelBonus;
+                    gameSpeed -= speedOffset;
+                    levelChanged = true;
+                }
+                if (levelChanged)
+                {
+                    level++;
+                    // printf(">> level %d\n", level);
+                    if (level % 3 == 0)
+                    {
+                        blockRange = std::min(blockRange + 1, m_blocks->getSize() - 1);
+                    }
+                }
+                if (removedBlocks)
+                {
+                    // drawStatus();
+                }
+                //   vTaskDelay(levelChanged ? 100 : 50 / portTICK_PERIOD_MS);
+            }
+            newShape();
+            // shape.newShape(random() % cols, orgY, blockRange);
+        }
+        drawShape();
+    }
+    //++cycles;
 }

@@ -5,15 +5,15 @@
 #include <emscripten.h>
 #endif
 
-#define FPS 24
+#define FPS 100
 
 void loop_handler(void *arg)
 {
     CRuntime *runtime = reinterpret_cast<CRuntime *>(arg);
     usleep(1000 / FPS * 1000);
     runtime->doInput();
-    runtime->paint();
     runtime->run();
+    runtime->paint();
 }
 
 int main(int argc, char *args[])
