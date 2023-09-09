@@ -61,7 +61,11 @@ protected:
         COUNTDOWN_INTRO = 1,
         COUNTDOWN_RESTART = 2,
         TILE_BLANK = 0,
-        FONT_SIZE = 8
+        FONT_SIZE = 8,
+        AIM_UP = 0,
+        AIM_DOWN = 1,
+        AIM_LEFT = 2,
+        AIM_RIGHT = 3,
     };
 
     enum : int32_t

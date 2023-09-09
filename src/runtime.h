@@ -16,11 +16,6 @@ protected:
     static void cleanup();
     enum
     {
-        AIM_UP = 0,
-        AIM_DOWN = 1,
-        AIM_LEFT = 2,
-        AIM_RIGHT = 3,
-
         MODE_START_GAME = 0,
         MODE_NEW_SHAPE = 1,
     };

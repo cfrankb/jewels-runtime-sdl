@@ -65,7 +65,7 @@ void CGame::preloadAssets()
     }
 
     init();
-    // test();
+    //  test();
 }
 
 void CGame::drawFont(CFrame &frame, int x, int y, const char *text, const uint32_t color)
@@ -188,7 +188,6 @@ void CGame::startCountdown(int f)
 
 void CGame::drawScreen(CFrame &bitmap)
 {
-    // printf("drawScreen()\n");
     CFrameSet &blocks = *m_blocks;
     for (int y = 0; y < ROWS; ++y)
     {
@@ -268,7 +267,6 @@ void CGame::init()
 
 void CGame::newShape()
 {
-    printf("newShape %d\n", blockRange);
     m_shape.newShape(random() % COLS, -2, blockRange);
     drawShape();
 }
@@ -290,7 +288,6 @@ void CGame::drawShape(bool erase)
             continue;
         }
         uint8_t tile = erase ? TILE_BLANK : shape.tile(i);
-        // drawTile(x, y, tile);
         m_grid->at(x, y) = tile;
     }
 }
@@ -386,7 +383,6 @@ void CGame::removePeers(peers_t &peers)
         uint32_t key = *it;
         pos_t p = CGrid::toPos(key);
         grid.at(p.x, p.y) = TILE_BLANK;
-        //  drawTile(p.x, p.y, TILE_BLANK);
     }
 }
 
@@ -505,54 +501,55 @@ void CGame::manageGame()
 
     if ((cycles & 15) == 0)
     {
-        /*
-        uint8_t buttons = readButtons();
-        if (buttons & MASK_A)
+        if (m_joyState[AIM_UP])
         {
             shape.shift();
-            drawShape(shape);
+            drawShape();
         }
-        else if (buttons & MASK_B)
+        else if (m_joyState[AIM_LEFT])
         {
-            if (canMoveShape(shape, CShape::LEFT))
+            if (canMoveShape(CShape::LEFT))
             {
-                eraseShape(shape);
+                eraseShape();
                 shape.move(CShape::LEFT);
-                drawShape(shape);
+                drawShape();
             }
         }
-        else if (buttons & MASK_C)
+        else if (m_joyState[AIM_RIGHT])
         {
-            if (canMoveShape(shape, CShape::RIGHT))
+            if (canMoveShape(CShape::RIGHT))
             {
-                eraseShape(shape);
+                eraseShape();
                 shape.move(CShape::RIGHT);
-                drawShape(shape);
+                drawShape();
             }
         }
-        else if (buttons & MASK_D)
+        else if (m_joyState[AIM_DOWN])
         {
-            eraseShape(shape);
-            while (canMoveShape(shape, CShape::DOWN))
+            eraseShape();
+            while (canMoveShape(CShape::DOWN))
             {
                 shape.move(CShape::DOWN);
             }
-            drawShape(shape);
-        }*/
+            drawShape();
+        }
     }
     if ((cycles % gameSpeed) == 0)
     {
-        printf("here....x=%d, y=%d\n", m_shape.x(), m_shape.y());
+        // m_grid->at(1, 10) = 10;
+        // printf("at %x\n", m_grid->at(1, 10));
+
+        // printf("here....x=%d, y=%d\n", m_shape.x(), m_shape.y());
         drawShape(false);
         if (m_shape.y() > 0)
         {
-            printf("grid at %d,%x =  %x\n", m_grid->at(m_shape.x(), m_shape.y()));
+            //   printf("grid at %d,%d =  %x\n", m_shape.x(), m_shape.y(), m_grid->at(m_shape.x(), m_shape.y()));
         }
-        printf("...%x %x %x\n", m_shape.tile(0), m_shape.tile(1), m_shape.tile(2));
-        // move shape down
+        // printf("...%x %x %x\n", m_shape.tile(0), m_shape.tile(1), m_shape.tile(2));
+        //  move shape down
         if (canMoveShape(CShape::DOWN))
         {
-            printf("........xxxxxxxxxxx.......\n");
+            //  printf("........xxxxxxxxxxx.......\n");
             eraseShape();
             shape.move(CShape::DOWN);
             drawShape(false);
@@ -562,7 +559,6 @@ void CGame::manageGame()
             if (shape.y() <= 0)
             {
                 initGame();
-                //     drawStatus();
                 cycles = 0;
             }
             else
@@ -600,9 +596,7 @@ void CGame::manageGame()
                 //   vTaskDelay(levelChanged ? 100 : 50 / portTICK_PERIOD_MS);
             }
             newShape();
-            // shape.newShape(random() % cols, orgY, blockRange);
         }
         drawShape();
     }
-    //++cycles;
 }
