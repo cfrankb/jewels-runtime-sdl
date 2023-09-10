@@ -21,7 +21,14 @@ public:
     void run();
 
 protected:
-    void mainLoop();
+    typedef struct
+    {
+        int x;
+        int y;
+        int width;
+        int height;
+    } Rect;
+
     void newShape();
     void drawShape(bool erase = false);
     void eraseShape();
@@ -35,6 +42,15 @@ protected:
     void initGame();
     void manageGame();
     virtual void paint();
+    void drawScreen(CFrame &bitmap);
+    void preloadAssets();
+    inline void drawRect(CFrame &frame, const Rect &rect, const uint32_t color = GREEN, bool fill = true);
+    inline void drawTile(CFrame &frame, const int x, const int y, CFrame &tile, bool alpha);
+    inline void drawString(CFrame &bitmap, const int x, const int y, const char *s, const uint32_t color = WHITE, const uint32_t bkcolor = BLACK);
+    inline void drawStatus(CFrame &bitmap);
+    void startCountdown(int f = 1);
+    void test();
+    void restartGame();
 
     enum : uint32_t
     {
@@ -69,57 +85,34 @@ protected:
         AIM_RIGHT = 3,
     };
 
+    enum : uint16_t
+    {
+        TILE_WIDTH = 16,
+        GRIDSIZE = TILE_WIDTH,
+        COLS = WIDTH / GRIDSIZE,
+        ROWS = HEIGHT / GRIDSIZE,
+        BLOCKS_PER_LEVEL = 50,
+        LEVEL_BONUS = 25,
+        SPEED_OFFSET = 2,
+    };
+
     enum : int32_t
     {
         INVALID = -1
     };
 
-    typedef struct
-    {
-        int x;
-        int y;
-        int width;
-        int height;
-    } Rect;
-
     uint8_t m_joyState[4];
-    uint32_t m_ticks = 0;
+    uint64_t m_ticks = 0;
     CFrameSet *m_blocks = nullptr;
-    uint8_t *m_fontData = nullptr;
     CFont *m_font;
     CGrid *m_grid;
-
     int m_countdown = 0;
-    void drawScreen(CFrame &bitmap);
-    void preloadAssets();
-    inline void drawFont(CFrame &frame, int x, int y, const char *text, const uint32_t color = WHITE);
-    inline void drawRect(CFrame &frame, const Rect &rect, const uint32_t color = GREEN, bool fill = true);
-    inline void drawTile(CFrame &frame, const int x, const int y, CFrame &tile, bool alpha);
-    inline void drawString(CFrame &bitmap, const int x, const int y, const char *s, const uint32_t color = WHITE, const uint32_t bkcolor = BLACK);
-    inline void drawStatus(CFrame &bitmap);
-    void startCountdown(int f = 1);
-    void test();
-    void restartGame();
-
-    const uint8_t TILE_WIDTH = 16;
-    const uint16_t GRIDSIZE = TILE_WIDTH;
-    const uint8_t COLS = WIDTH / GRIDSIZE;
-    const uint8_t ROWS = HEIGHT / GRIDSIZE;
-    const uint8_t cols = COLS;
-    const uint8_t rows = ROWS;
-
-    const uint16_t blocksPerLevel = 50;
-    const uint16_t levelBonus = 25;
-    const uint16_t speedOffset = 2;
-
-    uint64_t ticks = 0;
-    uint16_t gameSpeed;
-    uint32_t score;
-    uint16_t level;
-    uint16_t blockCount;
-    uint16_t totalBlocks;
-    int blockRange;
-
+    uint16_t m_gameSpeed;
+    uint32_t m_score;
+    uint16_t m_level;
+    uint16_t m_blockCount;
+    uint16_t m_totalBlocks;
+    int m_blockRange;
     CShape m_shape;
 };
 

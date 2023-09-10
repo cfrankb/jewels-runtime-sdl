@@ -34,8 +34,7 @@ public:
     };
 
 private:
-    uint8_t
-    randomTile(int range);
+    uint8_t randomTile(int range);
     int8_t m_x;
     int8_t m_y;
     uint8_t m_tiles[HEIGHT];

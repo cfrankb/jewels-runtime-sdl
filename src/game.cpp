@@ -6,6 +6,7 @@
 #include "grid.h"
 #include "shape.h"
 #include <cstring>
+#include <unistd.h>
 
 CGame::CGame()
 {
@@ -65,29 +66,6 @@ void CGame::preloadAssets()
     }
 
     // test();
-}
-
-void CGame::drawFont(CFrame &frame, int x, int y, const char *text, const uint32_t color)
-{
-    uint32_t *rgba = frame.getRGB();
-    const int rowPixels = frame.len();
-    const int fontSize = 8;
-    const int fontOffset = fontSize * fontSize;
-    const int textSize = strlen(text);
-    for (int i = 0; i < textSize; ++i)
-    {
-        const uint8_t c = static_cast<uint8_t>(text[i]) - ' ';
-        uint8_t *font = m_fontData + c * fontOffset;
-        for (int yy = 0; yy < fontSize; ++yy)
-        {
-            for (int xx = 0; xx < fontSize; ++xx)
-            {
-                rgba[(yy + y) * rowPixels + xx + x] = *font ? color : BLACK;
-                ++font;
-            }
-        }
-        x += fontSize;
-    }
 }
 
 void CGame::drawRect(CFrame &frame, const Rect &rect, const uint32_t color, bool fill)
@@ -249,36 +227,36 @@ void CGame::drawStatus(CFrame &bitmap)
 
     // Score
     drawString(bitmap, 0, offsetY, "SCORE", CYAN, MEDIUM_BLUE);
-    sprintf(t, "%.6ld", score);
+    sprintf(t, "%.6ld", m_score);
     drawString(bitmap, 0, offsetY + fontSize, t, CYAN, MEDIUM_BLUE);
 
     // Level
     drawString(bitmap, 7 * fontSize, offsetY, "LEVEL", WHITE, MEDIUM_BLUE);
-    sprintf(t, "  %.2d ", level);
+    sprintf(t, "  %.2d ", m_level);
     drawString(bitmap, 7 * fontSize, offsetY + fontSize, t, WHITE, MEDIUM_BLUE);
 
     // Blocks Left
     drawString(bitmap, 14 * fontSize, 0, "LEFT", PURPLE, MEDIUM_BLUE);
-    sprintf(t, " %.2d ", blocksPerLevel - blockCount);
+    sprintf(t, " %.2d ", BLOCKS_PER_LEVEL - m_blockCount);
     drawString(bitmap, 14 * fontSize, fontSize, t, PURPLE, MEDIUM_BLUE);
 }
 
 void CGame::init()
 {
     printf("CGame::init()\n");
-    gameSpeed = 50;
-    score = 0;
-    level = 1;
-    blockCount = 0;
-    totalBlocks = 0;
-    blockRange = CShape::DEFAULT_RANGE;
+    m_gameSpeed = 50;
+    m_score = 0;
+    m_level = 1;
+    m_blockCount = 0;
+    m_totalBlocks = 0;
+    m_blockRange = CShape::DEFAULT_RANGE;
     m_grid->clear();
     initGame();
 }
 
 void CGame::newShape()
 {
-    m_shape.newShape(random() % COLS, -2, blockRange);
+    m_shape.newShape(random() % COLS, -2, m_blockRange);
     drawShape();
 }
 
@@ -320,7 +298,7 @@ bool CGame::canMoveShape(int aim)
     {
     case CShape::DOWN:
         y += shape.height();
-        return y < rows && grid.at(x, y) == TILE_BLANK;
+        return y < ROWS && grid.at(x, y) == TILE_BLANK;
     case CShape::LEFT:
         --x;
         for (i = 0; i < shape.height(); ++i)
@@ -343,7 +321,7 @@ bool CGame::canMoveShape(int aim)
         ++x;
         for (i = 0; i < shape.height(); ++i)
         {
-            if (x >= cols)
+            if (x >= COLS)
             {
                 return false;
             }
@@ -366,7 +344,7 @@ void CGame::collapseCol(int16_t x)
     CShape &shape = m_shape;
     CGrid &grid = *m_grid;
     int16_t dy = INVALID;
-    for (int16_t y = rows - 1; y >= 0; --y)
+    for (int16_t y = ROWS - 1; y >= 0; --y)
     {
         if ((dy == INVALID) && grid.at(x, y) == TILE_BLANK)
         {
@@ -432,7 +410,7 @@ void CGame::blocksFromCols(std::set<int16_t> &chCols, std::vector<pos_t> &blocks
     for (std::set<int16_t>::iterator it = chCols.begin(); it != chCols.end(); ++it)
     {
         int16_t x = *it;
-        for (int16_t y = 0; y < rows; ++y)
+        for (int16_t y = 0; y < ROWS; ++y)
         {
             if (grid.at(x, y) != TILE_BLANK)
             {
@@ -478,8 +456,10 @@ uint16_t CGame::managePeers(CShape &shape)
         removePeers(allPeers);
         removedBlocks += allPeers.size();
         //  vTaskDelay(50 / portTICK_PERIOD_MS);
+        usleep(50);
         collapseCols(chCols);
         //  vTaskDelay(50 / portTICK_PERIOD_MS);
+        usleep(50);
         blocksFromCols(chCols, blocks);
         allPeers.clear();
         chCols.clear();
@@ -489,16 +469,15 @@ uint16_t CGame::managePeers(CShape &shape)
 
 void CGame::initGame()
 {
-    gameSpeed = 50;
-    score = 0;
-    level = 1;
-    blockCount = 0;
-    totalBlocks = 0;
-    blockRange = CShape::DEFAULT_RANGE;
-    // clear(BLACK);
+    m_ticks = 0;
+    m_gameSpeed = 50;
+    m_score = 0;
+    m_level = 1;
+    m_blockCount = 0;
+    m_totalBlocks = 0;
+    m_blockRange = CShape::DEFAULT_RANGE;
     m_grid->clear();
     newShape();
-    // ili9488_fill(0, 0, 320, 32, MEDIUM_BLUE);
     printf("(*) grid cleared\n");
 }
 
@@ -544,7 +523,7 @@ void CGame::manageGame()
             drawShape();
         }
     }
-    if ((cycles % gameSpeed) == 0)
+    if ((cycles % m_gameSpeed) == 0)
     {
         drawShape(false);
         //  move shape down
@@ -559,40 +538,40 @@ void CGame::manageGame()
             if (shape.y() <= 0)
             {
                 initGame();
-                cycles = 0;
             }
             else
             {
                 uint16_t removedBlocks = managePeers(shape);
-                score += removedBlocks;
+                m_score += removedBlocks;
                 /*if (removedBlocks)
                 {
                     printf("blockCount %d + removedBlocks:%u = newTotal %d; score: %lu\n",
                            blockCount, removedBlocks, blockCount + removedBlocks, score);
                 }*/
-                blockCount += removedBlocks;
-                totalBlocks += removedBlocks;
+                m_blockCount += removedBlocks;
+                m_totalBlocks += removedBlocks;
                 bool levelChanged = false;
-                while (blockCount >= blocksPerLevel)
+                while (m_blockCount >= BLOCKS_PER_LEVEL)
                 {
-                    blockCount -= blocksPerLevel;
-                    score += levelBonus;
-                    gameSpeed -= speedOffset;
+                    m_blockCount -= BLOCKS_PER_LEVEL;
+                    m_score += LEVEL_BONUS;
+                    m_gameSpeed -= SPEED_OFFSET;
                     levelChanged = true;
                 }
                 if (levelChanged)
                 {
-                    level++;
-                    printf(">> level %d\n", level);
-                    if (level % 3 == 0)
+                    ++m_level;
+                    printf(">> level %d\n", m_level);
+                    if (m_level % 3 == 0)
                     {
-                        blockRange = std::min(blockRange + 1, m_blocks->getSize() - 1);
+                        m_blockRange = std::min(m_blockRange + 1, m_blocks->getSize() - 1);
                     }
                 }
                 if (removedBlocks)
                 {
                     // drawStatus();
                 }
+                usleep(levelChanged ? 100 : 50);
                 //   vTaskDelay(levelChanged ? 100 : 50 / portTICK_PERIOD_MS);
             }
             newShape();
@@ -603,5 +582,5 @@ void CGame::manageGame()
 
 void CGame::paint()
 {
-    printf("implement in child class\n");
+    printf("TODO: implement this function in child class\n");
 }
