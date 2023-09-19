@@ -1,8 +1,8 @@
 CC=emcc
 INC=
 LIBS=
-ARGS=-s USE_SDL=2 -s USE_ZLIB=1 -DWASM
-PARGS=--preload-file data --emrun -O2 -s WASM=1
+ARGS=-sUSE_SDL=2 -sUSE_ZLIB=1 -DWASM
+PARGS=--preload-file data --emrun -O2 -sWASM=1
 BPATH=build
 BNAME=jewels.html
 TARGET=$(BPATH)/$(BNAME)
@@ -53,5 +53,6 @@ $(TARGET): $(DEPS)
 
 clean:
 	rm -f $(BPATH)/*
+
 run:
 	$(RUN)

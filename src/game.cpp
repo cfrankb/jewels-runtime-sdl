@@ -226,19 +226,22 @@ void CGame::drawStatus(CFrame &bitmap)
         true);
 
     // Score
-    drawString(bitmap, 0, offsetY, "SCORE", CYAN, MEDIUM_BLUE);
+    int x = 0;
+    drawString(bitmap, x * fontSize, offsetY, "SCORE", CYAN, MEDIUM_BLUE);
     sprintf(t, "%.6u", m_score);
-    drawString(bitmap, 0, offsetY + fontSize, t, CYAN, MEDIUM_BLUE);
+    drawString(bitmap, x * fontSize, offsetY + fontSize, t, CYAN, MEDIUM_BLUE);
 
     // Level
-    drawString(bitmap, 7 * fontSize, offsetY, "LEVEL", WHITE, MEDIUM_BLUE);
+    x += 8;
+    drawString(bitmap, x * fontSize, offsetY, "LEVEL", WHITE, MEDIUM_BLUE);
     sprintf(t, "  %.2d ", m_level);
-    drawString(bitmap, 7 * fontSize, offsetY + fontSize, t, WHITE, MEDIUM_BLUE);
+    drawString(bitmap, x * fontSize, offsetY + fontSize, t, WHITE, MEDIUM_BLUE);
 
     // Blocks Left
-    drawString(bitmap, 14 * fontSize, 0, "LEFT", PURPLE, MEDIUM_BLUE);
+    x += 7;
+    drawString(bitmap, x * fontSize, 0, "LEFT", PURPLE, MEDIUM_BLUE);
     sprintf(t, " %.2d ", BLOCKS_PER_LEVEL - m_blockCount);
-    drawString(bitmap, 14 * fontSize, fontSize, t, PURPLE, MEDIUM_BLUE);
+    drawString(bitmap, x * fontSize, fontSize, t, PURPLE, MEDIUM_BLUE);
 }
 
 void CGame::init()
