@@ -227,7 +227,7 @@ void CGame::drawStatus(CFrame &bitmap)
 
     // Score
     drawString(bitmap, 0, offsetY, "SCORE", CYAN, MEDIUM_BLUE);
-    sprintf(t, "%.6ld", m_score);
+    sprintf(t, "%.6u", m_score);
     drawString(bitmap, 0, offsetY + fontSize, t, CYAN, MEDIUM_BLUE);
 
     // Level

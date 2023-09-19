@@ -1,11 +1,12 @@
-CC=g++
+CC=emcc
 INC=
-LIBS=-lSDL2 -lz
-ARGS=-O3
-PARGS=
+LIBS=
+ARGS=-s USE_SDL=2 -s USE_ZLIB=1 -DWASM
+PARGS=--preload-file data --emrun -O2 -s WASM=1
 BPATH=build
-BNAME=jewels-runtime
+BNAME=jewels.html
 TARGET=$(BPATH)/$(BNAME)
+RUN=emrun $(TARGET)
 DEPS=$(BPATH)/runtime$(EXT) $(BPATH)/main$(EXT) $(BPATH)/grid$(EXT) $(BPATH)/game$(EXT) $(BPATH)/font$(EXT) $(BPATH)/shape$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
 EXT=.o
 
@@ -52,3 +53,5 @@ $(TARGET): $(DEPS)
 
 clean:
 	rm -f $(BPATH)/*
+run:
+	$(RUN)

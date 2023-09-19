@@ -5,13 +5,14 @@ import os
 import sys
 
 EXIT_SUCCESS = 0
-EXIT_FAILURE =1
+EXIT_FAILURE = 1
+
 
 def prepare_deps(deps, fname):
     lines = []
     basename = ntpath.basename(fname)
     name = basename.replace('.cpp', '')
-    fname_h =fname.replace('.cpp', '.h')
+    fname_h = fname.replace('.cpp', '.h')
     ref = fname
     if os.path.isfile(fname_h):
         ref += f' {fname_h}'
@@ -40,6 +41,9 @@ def get_deps_blocks():
     lines = []
     lines.append('clean:')
     lines.append("\trm -f $(BPATH)/*")
+    lines.append('run:')
+    lines.append('\t$(RUN)')
+
     deps_blocks.append('\n'.join(lines))
     return deps_blocks, objs
 
@@ -57,32 +61,37 @@ python bin/gen.py emsdl
 
 '''.strip()
 
+
 def main():
     if len(sys.argv) != 2 or sys.argv[1] not in ['sdl', 'emsdl']:
         print(help_text)
         exit(EXIT_FAILURE)
     elif sys.argv[1] == 'sdl':
         vars = [
-            'CC=g++', 
-            'INC=', 
+            'CC=g++',
+            'INC=',
             'LIBS=-lSDL2 -lz',
             'ARGS=-O3',
             'PARGS=',
-            'BPATH=build', 'BNAME=jewels-runtime', 'TARGET=$(BPATH)/$(BNAME)'
-            ]
+            'BPATH=build', 'BNAME=jewels-runtime',
+            'TARGET=$(BPATH)/$(BNAME)',
+            'RUN=$(TARGET)'
+        ]
         print("type `make` to generare binary.")
         ext = '.o'
     elif sys.argv[1] == 'emsdl':
         vars = [
-            'CC=emcc', 
-            'INC=', 
+            'CC=emcc',
+            'INC=',
             'LIBS=',
-            'ARGS=-s USE_SDL=2 -s USE_ZLIB=1',
-            'PARGS=--preload-file data --emrun -DWASM -O2 -s WASM=1',
-            'BPATH=build', 'BNAME=jewels.html', 'TARGET=$(BPATH)/$(BNAME)'
-            ]
+            'ARGS=-s USE_SDL=2 -s USE_ZLIB=1 -DWASM',
+            'PARGS=--preload-file data --emrun -O2 -s WASM=1',
+            'BPATH=build', 'BNAME=jewels.html',
+            'TARGET=$(BPATH)/$(BNAME)',
+            'RUN=emrun $(TARGET)'
+        ]
         print("type `emmake make` to generare binary.")
-        ext = '.jo'
+        ext = '.o'
 
     deps_blocks, objs = get_deps_blocks()
     vars.append(f'DEPS={objs}')
@@ -94,5 +103,6 @@ def main():
     if not os.path.exists('build/'):
         os.makedirs('build/')
     return EXIT_SUCCESS
+
 
 exit(main())
