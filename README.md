@@ -4,7 +4,7 @@ This project aims to port to the Jewels Runtime to a wide variety of platforms.
 
 Using the SDL2 libraries as a base, the game can now run as a desktop app or in the browser.
 
-![alt text](images/Screenshot_2024-01-25_19-00-29.png)
+![alt text](images/Screenshot_2024-11-14_00-11-41-crop.png)
 
 ## Building the runtime
 
