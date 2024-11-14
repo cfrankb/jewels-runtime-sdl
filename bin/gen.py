@@ -36,11 +36,11 @@ def get_deps_blocks():
     objs = ' '.join(f'$(BPATH)/{x}$(EXT)' for x in deps)
     lines = []
     lines.append(f'$(TARGET): $(DEPS)')
-    lines.append(f'\t$(CC) $(ARGS) $(DEPS) $(LIBS) $(PARGS) -o $@')
+    lines.append(f'\t$(CC) $(ARGS) $(DEPS) $(LIBS) $(PARGS) -o $@ $(TEMPLATE)')
     deps_blocks.append('\n'.join(lines))
     lines = []
     lines.append('clean:')
-    lines.append("\trm -f $(BPATH)/*")
+    lines.append("\trm -rf $(BPATH)/*")
     deps_blocks.append('\n'.join(lines))
     lines = []
     lines.append('run:')
@@ -76,7 +76,8 @@ def main():
             'PARGS=',
             'BPATH=build', 'BNAME=jewels-runtime',
             'TARGET=$(BPATH)/$(BNAME)',
-            'RUN=$(TARGET)'
+            'RUN=$(TARGET)',
+            'TEMPLATE='
         ]
         print("type `make` to generare binary.")
         ext = '.o'
@@ -89,7 +90,8 @@ def main():
             'PARGS=--preload-file data --emrun -O2 -sWASM=1',
             'BPATH=build', 'BNAME=jewels.html',
             'TARGET=$(BPATH)/$(BNAME)',
-            'RUN=emrun $(TARGET)'
+            'RUN=emrun $(TARGET)',
+            'TEMPLATE=--shell-file src/template/body.html'
         ]
         print("type `emmake make` to generare binary.")
         ext = '.o'

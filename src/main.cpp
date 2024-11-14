@@ -5,7 +5,7 @@
 #include <emscripten.h>
 #endif
 
-#define FPS 100
+#define FPS 80
 
 void loop_handler(void *arg)
 {

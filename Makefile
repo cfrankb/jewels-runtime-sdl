@@ -7,6 +7,7 @@ BPATH=build
 BNAME=jewels.html
 TARGET=$(BPATH)/$(BNAME)
 RUN=emrun $(TARGET)
+TEMPLATE=--shell-file src/template/body.html
 DEPS=$(BPATH)/runtime$(EXT) $(BPATH)/main$(EXT) $(BPATH)/grid$(EXT) $(BPATH)/game$(EXT) $(BPATH)/font$(EXT) $(BPATH)/shape$(EXT) $(BPATH)/FrameSet$(EXT) $(BPATH)/Frame$(EXT) $(BPATH)/DotArray$(EXT) $(BPATH)/helper$(EXT) $(BPATH)/PngMagic$(EXT) $(BPATH)/FileWrap$(EXT)
 EXT=.o
 
@@ -49,10 +50,10 @@ $(BPATH)/FileWrap$(EXT): src/shared/FileWrap.cpp src/shared/FileWrap.h
 	$(CC) $(ARGS) -c $< $(INC) -o $@
 
 $(TARGET): $(DEPS)
-	$(CC) $(ARGS) $(DEPS) $(LIBS) $(PARGS) -o $@
+	$(CC) $(ARGS) $(DEPS) $(LIBS) $(PARGS) -o $@ $(TEMPLATE)
 
 clean:
-	rm -f $(BPATH)/*
+	rm -rf $(BPATH)/*
 
 run:
 	$(RUN)

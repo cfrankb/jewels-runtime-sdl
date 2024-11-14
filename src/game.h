@@ -94,6 +94,7 @@ protected:
         BLOCKS_PER_LEVEL = 50,
         LEVEL_BONUS = 25,
         SPEED_OFFSET = 2,
+        UI_SPEED = 13,
     };
 
     enum : int32_t
@@ -103,6 +104,7 @@ protected:
 
     uint8_t m_joyState[4];
     uint64_t m_ticks = 0;
+    uint64_t m_nextUI = 0;
     CFrameSet *m_blocks = nullptr;
     CFont *m_font;
     CGrid *m_grid;
@@ -114,6 +116,7 @@ protected:
     uint16_t m_totalBlocks;
     int m_blockRange;
     CShape m_shape;
+    bool m_dirty;
 };
 
 #endif // CGAMEMIXIN_H

@@ -1,7 +1,7 @@
+#include "shared/FileWrap.h"
 #include "shared/FrameSet.h"
 #include "shared/Frame.h"
 #include "game.h"
-#include "shared/FileWrap.h"
 #include "font.h"
 #include "grid.h"
 #include "shape.h"
@@ -10,6 +10,7 @@
 
 CGame::CGame()
 {
+    m_dirty = false;
     m_grid = new CGrid(COLS, ROWS);
     m_font = new CFont(CFont::shift8bytes);
     preloadAssets();
@@ -154,11 +155,12 @@ void CGame::run()
     }
 
     ++m_ticks;
-    if ((m_ticks & 3) == 0)
+    manageGame();
+    if (m_dirty || (m_ticks & 3) == 0)
     {
         paint();
+        m_dirty = false;
     }
-    manageGame();
 }
 
 void CGame::startCountdown(int f)
@@ -282,6 +284,7 @@ void CGame::drawShape(bool erase)
         uint8_t tile = erase ? TILE_BLANK : shape.tile(i);
         m_grid->at(x, y) = tile;
     }
+    m_dirty = true;
 }
 
 void CGame::eraseShape()
@@ -364,6 +367,7 @@ void CGame::collapseCol(int16_t x)
             //  drawTile(x, y, TILE_BLANK);
         }
     }
+    m_dirty = true;
 }
 
 void CGame::removePeers(peers_t &peers)
@@ -458,10 +462,8 @@ uint16_t CGame::managePeers(CShape &shape)
         }
         removePeers(allPeers);
         removedBlocks += allPeers.size();
-        //  vTaskDelay(50 / portTICK_PERIOD_MS);
         usleep(50);
         collapseCols(chCols);
-        //  vTaskDelay(50 / portTICK_PERIOD_MS);
         usleep(50);
         blocksFromCols(chCols, blocks);
         allPeers.clear();
@@ -487,12 +489,14 @@ void CGame::initGame()
 void CGame::manageGame()
 {
     CShape &shape = m_shape;
-    int cycles = m_ticks;
+    const auto cycles = m_ticks;
 
-    //   printf("cycles: %d gameSpeed:%d\n", cycles, gameSpeed);
-    // vTaskDelay(10 / portTICK_PERIOD_MS);
-    if ((cycles & 15) == 0)
+    // printf("cycles: %llu gameSpeed:%d nextUI: %llu\n", cycles, m_gameSpeed, m_nextUI);
+    //  vTaskDelay(10 / portTICK_PERIOD_MS);
+    //  if ((cycles & UI_SPEED) == 0)
+    if (cycles >= m_nextUI)
     {
+        bool uiHandled = true;
         if (m_joyState[AIM_UP])
         {
             shape.shift();
@@ -524,6 +528,14 @@ void CGame::manageGame()
                 shape.move(CShape::DOWN);
             }
             drawShape();
+        }
+        else
+        {
+            uiHandled = false;
+        }
+        if (uiHandled)
+        {
+            m_nextUI = cycles + UI_SPEED;
         }
     }
     if ((cycles % m_gameSpeed) == 0)
@@ -575,7 +587,6 @@ void CGame::manageGame()
                     // drawStatus();
                 }
                 usleep(levelChanged ? 100 : 50);
-                //   vTaskDelay(levelChanged ? 100 : 50 / portTICK_PERIOD_MS);
             }
             newShape();
         }
